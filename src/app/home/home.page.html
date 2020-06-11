@@ -16,6 +16,9 @@
     </div>
     <div><button id="snap" (click)="capture()">Snap Photo</button></div>
     <canvas #canvas id="canvas" width="640" height="480"></canvas>
+    <ion-button (click)="flip()">Flip</ion-button>
+    <ion-button (click)="toggleFlash()">Flash</ion-button>
+
     <ul>
       <li *ngFor="let c of captures">
         <img src="{{ c }}" height="50" />
