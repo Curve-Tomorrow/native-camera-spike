@@ -2,6 +2,7 @@ import { Platform } from '@ionic/angular';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { Component, ViewChild, OnInit, ElementRef, AfterViewInit } from '@angular/core';
 
+declare let cordova: any;
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -43,6 +44,17 @@ export class HomePage implements OnInit, AfterViewInit {
             console.log('permissions asked');
             this.initCamera();
           });
+      } else if (this.platform.is('cordova') && this.platform.is('ios')) {
+        (cordova.plugins as any).iosrtc.registerGlobals();
+
+        // load adapter.js
+        const adapterVersion = 'latest';
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'https://webrtc.github.io/adapter/adapter-' + adapterVersion + '.js';
+        script.async = false;
+        document.getElementsByTagName('head')[0].appendChild(script);
+        this.initCamera();
       } else {
         this.initCamera();
       }
@@ -105,8 +117,10 @@ export class HomePage implements OnInit, AfterViewInit {
   }
 
   public toggleFlash() {
-    this.track.applyConstraints({
-      advanced: [{ torch: true } as any],
-    }).catch(e => console.log(e));
+    this.track
+      .applyConstraints({
+        advanced: [{ torch: true } as any],
+      })
+      .catch((e) => console.log(e));
   }
 }
