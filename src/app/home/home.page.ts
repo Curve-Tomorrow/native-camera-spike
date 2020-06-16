@@ -29,7 +29,7 @@ export class HomePage implements OnInit, AfterViewInit {
 
   public track: MediaStreamTrack = null;
 
-  public mediaRecorder: MediaRecorder = null;
+  public recorder: any = null;
 
   public error: any;
 
@@ -131,19 +131,18 @@ export class HomePage implements OnInit, AfterViewInit {
   }
 
   async record() {
-    const recorder = new RecordRTC.RecordRTCPromisesHandler(this.stream, {
+    this.recorder = new RecordRTC.WhammyRecorder(this.stream, {
       type: 'video',
       mimeType: 'video/webm',
     });
-    recorder.startRecording();
+    this.recorder.record();
+  }
 
-    const sleep = (m) => new Promise((r) => setTimeout(r, m));
-    await sleep(3000);
-
-    await recorder.stopRecording();
-    const blob = await recorder.getBlob();
-    console.log(blob);
-    this.recordedBlob = blob;
+  async stopRecording() {
+    await this.recorder.stop((blob) => {
+      console.log(blob);
+      this.recordedBlob = blob;
+    });
   }
 
   public play() {
