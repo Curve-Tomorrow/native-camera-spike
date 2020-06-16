@@ -7,25 +7,31 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div id="app">
-    <div class="video-wrapper">
-      <div class="square-wrapper">
-        <div class="square"></div>
-      </div>
-      <video #video id="video" width="320" height="240" autoplay></video>
+  <div class="video-section">
+    <div class="square-wrapper">
+      <div class="square"></div>
     </div>
-    <div><button id="snap" (click)="capture()">Snap Photo</button></div>
-    <canvas #canvas id="canvas" width="640" height="480"></canvas>
-    <ion-button (click)="flip()">Flip</ion-button>
-    <ion-button (click)="toggleFlash()">Flash</ion-button>
-
-    <ul>
-      <li *ngFor="let c of captures">
-        <img src="{{ c }}" height="50" />
-      </li>
-    </ul>
-
-    {{error }}
-    
+    <div class="video-wrapper">
+      <video #video id="video" width="320" height="240" autoplay playsinline="playsinline" webkit-playsinline></video>
+    </div>
   </div>
+  <canvas #canvas id="canvas" width="320" height="240"></canvas>
+  <ion-button (click)="capture()">Take photo</ion-button>
+  <ion-button (click)="flip()">Flip</ion-button>
+  <ion-button (click)="toggleFlash()">Flash</ion-button>
+  <ion-button #recordButton (click)="record()">Record</ion-button>
+  <ion-button #playButton (click)="play()">Play</ion-button>
+
+  <ul>
+    <li *ngFor="let c of captures">
+      <img src="{{ c }}" height="50" />
+    </li>
+  </ul>
+
+  <video #recordedVideo id="recordedVideo" width="320" height="240" autoplay playsinline="playsinline"
+    webkit-playsinline></video>
+
+  {{error }}
+
+
 </ion-content>

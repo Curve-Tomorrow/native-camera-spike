@@ -1,8 +1,11 @@
 import { Platform } from '@ionic/angular';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { Component, ViewChild, OnInit, ElementRef, AfterViewInit } from '@angular/core';
+import * as RecordRTC from 'recordrtc';
 
 declare let cordova: any;
+declare let MediaStreamRecorder: any;
+
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -12,10 +15,13 @@ export class HomePage implements OnInit, AfterViewInit {
   @ViewChild('video')
   public video: ElementRef;
 
+  @ViewChild('recordedVideo')
+  public recordedVideo: ElementRef;
+
   @ViewChild('canvas')
   public canvas: ElementRef;
 
-  public captures: Array<any>;
+  public captures: string[] = [];
 
   public shouldFaceUser = true;
 
@@ -23,11 +29,13 @@ export class HomePage implements OnInit, AfterViewInit {
 
   public track: MediaStreamTrack = null;
 
+  public mediaRecorder: MediaRecorder = null;
+
   public error: any;
 
-  public constructor(private androidPermissions: AndroidPermissions, private platform: Platform) {
-    this.captures = [];
-  }
+  public recordedBlob: Blob = null;
+
+  public constructor(private androidPermissions: AndroidPermissions, private platform: Platform) {}
 
   public ngOnInit() {}
 
@@ -54,6 +62,7 @@ export class HomePage implements OnInit, AfterViewInit {
         script.src = 'https://webrtc.github.io/adapter/adapter-' + adapterVersion + '.js';
         script.async = false;
         document.getElementsByTagName('head')[0].appendChild(script);
+
         this.initCamera();
       } else {
         this.initCamera();
@@ -63,6 +72,7 @@ export class HomePage implements OnInit, AfterViewInit {
 
   public async initCamera() {
     try {
+      // navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: this.shouldFaceUser ? 'user' : 'environment' },
@@ -70,6 +80,8 @@ export class HomePage implements OnInit, AfterViewInit {
         this.track = this.stream.getVideoTracks()[0];
         this.video.nativeElement.srcObject = this.stream;
         this.video.nativeElement.play();
+        // need to make body transparent to be able to have an element in front of the video
+        document.body.style.background = 'transparent';
       } else {
         throw new Error('media devices or user media not supported');
       }
@@ -99,8 +111,47 @@ export class HomePage implements OnInit, AfterViewInit {
   }
 
   public capture() {
-    const context = this.canvas.nativeElement.getContext('2d').drawImage(this.video.nativeElement, 0, 0, 640, 480);
-    this.captures.push(this.canvas.nativeElement.toDataURL('image/png'));
+    if (this.platform.is('cordova') && this.platform.is('ios')) {
+      this.canvas.nativeElement.getContext('2d').drawImage(this.video.nativeElement, 0, 0, 320, 240);
+      const image = new Image();
+      image.addEventListener('load', () => {
+        this.canvas.nativeElement.width = image.width;
+        this.canvas.nativeElement.height = image.height;
+        this.canvas.nativeElement.getContext('2d').drawImage(image, 0, 0);
+        this.captures.push(this.canvas.nativeElement.toDataURL('image/png'));
+      });
+      this.video.nativeElement.render.save((data) => {
+        image.src = 'data:image/jpg;base64,' + data;
+        console.log(JSON.stringify(this.captures));
+      });
+    } else {
+      this.canvas.nativeElement.getContext('2d').drawImage(this.video.nativeElement, 0, 0, 320, 240);
+      this.captures.push(this.canvas.nativeElement.toDataURL('image/png'));
+    }
+  }
+
+  async record() {
+    const recorder = new RecordRTC.RecordRTCPromisesHandler(this.stream, {
+      type: 'video',
+      mimeType: 'video/webm',
+    });
+    recorder.startRecording();
+
+    const sleep = (m) => new Promise((r) => setTimeout(r, m));
+    await sleep(3000);
+
+    await recorder.stopRecording();
+    const blob = await recorder.getBlob();
+    console.log(blob);
+    this.recordedBlob = blob;
+  }
+
+  public play() {
+    this.recordedVideo.nativeElement.src = null;
+    this.recordedVideo.nativeElement.srcObject = null;
+    this.recordedVideo.nativeElement.src = window.URL.createObjectURL(this.recordedBlob);
+    this.recordedVideo.nativeElement.controls = true;
+    this.recordedVideo.nativeElement.play();
   }
 
   public flip() {
