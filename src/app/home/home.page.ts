@@ -131,9 +131,11 @@ export class HomePage implements OnInit, AfterViewInit {
   }
 
   async record() {
-    this.recorder = new RecordRTC.WhammyRecorder(this.stream, {
+    console.log(this.stream);
+    this.recorder = new RecordRTC.MediaStreamRecorder(this.stream, {
       type: 'video',
-      mimeType: 'video/webm',
+      mimeType: 'video/webm;codecs=h264',
+      disableLogs: false,
     });
     this.recorder.record();
   }

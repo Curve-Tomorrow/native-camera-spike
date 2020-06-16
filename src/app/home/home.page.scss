@@ -4,6 +4,12 @@ ion-content {
 
 #video {
   background-color: transparent;
+  object-fit: contain;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  // need to make z-index of the video -1 to go to the back of the web view;
+  z-index: -1;
 }
 
 #canvas {
@@ -22,12 +28,6 @@ li {
 }
 
 video {
-  object-fit: contain;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  // need to make z-index of the video -1 to go to the back of the web view;
-  z-index: -1;
 }
 
 .video-section {
