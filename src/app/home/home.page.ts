@@ -2,6 +2,7 @@ import { Platform } from '@ionic/angular';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { Component, ViewChild, OnInit, ElementRef, AfterViewInit } from '@angular/core';
 import * as RecordRTC from 'recordrtc';
+import { VideoCapturePlus, VideoCapturePlusOptions, MediaFile } from '@ionic-native/video-capture-plus/ngx';
 
 declare let cordova: any;
 declare let MediaStreamRecorder: any;
@@ -35,7 +36,11 @@ export class HomePage implements OnInit, AfterViewInit {
 
   public recordedBlob: Blob = null;
 
-  public constructor(private androidPermissions: AndroidPermissions, private platform: Platform) {}
+  public constructor(
+    private androidPermissions: AndroidPermissions,
+    private platform: Platform,
+    private videoCapturePlus: VideoCapturePlus,
+  ) {}
 
   public ngOnInit() {}
 
@@ -174,5 +179,20 @@ export class HomePage implements OnInit, AfterViewInit {
         advanced: [{ torch: true } as any],
       })
       .catch((e) => console.log(e));
+  }
+
+  // ios NAtive
+  public startiOS() {
+    const options: VideoCapturePlusOptions = {
+      limit: 1,
+      highquality: true,
+      portraitOverlay: 'www/assets/overlay.png',
+      landscapeOverlay: 'www/assets/overlay.png',
+    };
+
+    this.videoCapturePlus.captureVideo(options).then(
+      (mediafile: MediaFile[]) => console.log(mediafile),
+      (error) => console.log('Something went wrong'),
+    );
   }
 }

@@ -23,6 +23,8 @@
   <ion-button #recordButton (click)="stopRecording()">Stop Recording</ion-button>
   <ion-button #playButton (click)="play()">Play</ion-button>
 
+  <ion-button (click)="startiOS()">ios only</ion-button>
+
   <ul>
     <li *ngFor="let c of captures">
       <img src="{{ c }}" height="50" />
